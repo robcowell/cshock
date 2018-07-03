@@ -5,14 +5,11 @@
 
 		jsr initialise		;init routs from library
 
-		move.l 	#screen,d0	;get screen address
-		clr.b 	d0			;round to 256 byte boundary
-		move.l	d0,a0		;copy to a0
-		clr.b	$ff820d		;clear vid address low byte (ste)
-		lsr.l	#8,d0
-		move.b	d0,$ff8203	;set vid address mid byte
-		lsr.w	#8,d0
-		move.b	d0,$ff8201	;set vid address high byte	
+		move.l #screen,d0
+        clr.b  d0
+        move.l d0,a0
+        lsr.w #8,d0
+        move.l d0,$ffff8200
 
 		movem.l	blackpal,d0-d7		;Set palette
 		movem.l	d0-d7,$ffff8240.w	
@@ -29,7 +26,6 @@
 
 		move.l #vbl,$70.w
 		move.l #timerb,$120.w
-;       move.l #timera,$134.w
 
 
 .wait	tst.w 	vblcount
@@ -65,7 +61,7 @@ vbl:
 		clr.b $fffffa1b.w ;Timer B control (stop)
 		bset #0,$fffffa07.w ;Interrupt enable A (Timer B)
 		bset #0,$fffffa13.w ;Interrupt mask A (Timer B)
-		move.b #1,$fffffa21.w ;Timer B data (number of scanlines to next interrupt)
+		move.b #2,$fffffa21.w ;Timer B data (number of scanlines to next interrupt)
 		bclr #3,$fffffa17.w ;Automatic end of interrupt
 		move.b #8,$fffffa1b.w ;Timer B control (event mode (HBL))
 		bclr #5,$fffffa09.w 	;disable timer c
@@ -78,6 +74,7 @@ vbl:
 
 		rte
 
+
 timerb:
 		lea $ffff8240,A3 			;8
 		lea	rasters,a4 				;12
@@ -88,9 +85,6 @@ timerb:
 		addq.w #2,raster_ofs 		;8
 	
 		rte		
-
-timera:
-        rte
 
 		include	initlib.s
 
