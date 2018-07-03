@@ -1,6 +1,10 @@
 ; Colorshock 2k16
 ; Big Boss Man of Demografica
 
+NOPS		macro
+		dcb.w	\1,$4e71
+		endm
+
 		section text
 
 		jsr initialise		;init routs from library
@@ -70,20 +74,42 @@ vbl:
 		move.b #02,$ff820a
 
 		;move.w #$2300,sr 	;Interrupts back on
-
-
 		rte
 
-
 timerb:
-		lea $ffff8240,A3 			;8
-		lea	rasters,a4 				;12
-		add.w	raster_ofs,a4 		;4
-		rept 32
-		move.w (a4)+,(a3)		;12
+		move.w	#$2700,sr	; lock out interrupts
+		movem.l	d0-a6,-(a7)
+		clr.b	$fffffa1b.w	; kill timer B
+		
+		; At this point we should be in the visible screen area,
+		; so we can hard sync now
+		move.b	$ffff8209.w,d0		; read screen lo byte
+		not.b	d0			; reverse
+		lsl.w	d0,d0			; shift to sync
+
+		; Now sync-locked!
+		; Need enough nops here to get back to the scanline start
+		lea $ffff8240.w,A3 		;2
+		move.w	#200-1,d7		;2
+
+		; The following might need to be adjusted on real hardware
+		; depending on what you put at the start of the loop
+		lea	rasters+16*2(pc),a5	;2
+		NOPS	74			;pad nops to get to a scanline start
+.scanline_loop:
+		; time to distort the raster here, add nops and offset into rasters
+		move.l	a5,a4			;1
+		addq.l	#2,a5			;2 "distort"	
+
+		rept 36
+		move.w (a4)+,(a3)		;3*n
 		endr
-		addq.w #2,raster_ofs 		;8
-	
+
+		NOPS	128-1-2-3*36-3,$4e71	;pad nops
+		dbf	d7,.scanline_loop
+
+		clr.w	$ffff8240.w		;I want my border back
+		movem.l	(a7)+,d0-a6
 		rte		
 
 		include	initlib.s
