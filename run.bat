@@ -1,3 +1,2 @@
-@echo off
-cls
-D:\Downloads\hatari-2.0.0_windows64\hatari %1.tos
+
+d:\hatari-2.1.0_windows64\hatari.exe %1.tos

@@ -95,7 +95,7 @@ timerb:
 		; The following might need to be adjusted on real hardware
 		; depending on what you put at the start of the loop
 		lea	rasters+16*2(pc),a5	;2
-		NOPS	74			;pad nops to get to a scanline start
+		NOPS	71			;pad nops to get to a scanline start
 .scanline_loop:
 		; time to distort the raster here, add nops and offset into rasters
 		move.l	a5,a4			;1
